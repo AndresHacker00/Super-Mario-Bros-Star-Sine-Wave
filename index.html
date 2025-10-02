@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mario Star!</title>
+    <style>
+        @font-face {
+            font-family: 'Super Mario Bros. NES';
+            src: url('super-mario-bros-nes.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .contenedor-imagenes {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+        }
+        .wallpaper {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        .imagen-frente {
+            position: absolute;
+            width: 50%;
+            height: auto;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            border: 3px solid white;
+        }
+        .estrella-animada {
+            position: absolute;
+            width: 5%;
+            height: auto;
+            /* Bajada 2 cm más (6cm + 2cm = 8cm) */
+            top: calc(10% + 8cm);
+            left: 25%;
+            z-index: 3;
+            transform: translate(0, 0); 
+        }
+        .interfaz-usuario {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 2%;
+            z-index: 4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .titulo {
+            color: white;
+            text-shadow: 2px 2px 2px black;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+            font-family: 'Super Mario Bros. NES', sans-serif;
+        }
+        #BotonMusica {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            cursor: pointer;
+            background-color: #ff0000;
+            color: white;
+            border: 3px solid #ffcc00;
+            border-radius: 5px;
+            box-shadow: 1px 1px 5px black;
+            font-family: 'Super Mario Bros. NES', sans-serif;
+        }
+    </style>
+</head>
+<body>
+<div class="contenedor-imagenes">
+    <img src="Wallpaper.png" class="wallpaper" alt="Full screen wallpaper">
+    <img src="level.png" class="imagen-frente" id="cuadro-frente" alt="Imagen secundaria">
+    <img src = "star.gif" class="estrella-animada" id ="estrella">
+
+    <div class="interfaz-usuario">
+        <h1 class="titulo">SUPER MARIO STAR! </h1>
+        <button id="BotonMusica">Play</button>
+    </div>
+</div>
+<audio id="MusicaFondo" src="Super Mario Bros. Theme Song.mp3" loop></audio>
+
+<script>
+    const audio = document.getElementById('MusicaFondo');
+    const boton = document.getElementById('BotonMusica');
+    const estrella = document.getElementById('estrella');
+    const cuadro = document.getElementById('cuadro-frente');
+
+    let posX = 0;
+    let velX = 2;
+    let dir = 1;
+    let limiteX = 0;
+
+    let tiempo = 0;
+    const alturaSalto = 25;
+    const velocidadSalto = 0.1;
+
+    const calcularLimite = () => {
+        const anchoCuadro = cuadro.clientWidth;
+        const anchoEstrella = estrella.clientWidth;
+        limiteX = anchoCuadro - anchoEstrella;
+    };
+
+    const moverEstrella = () => {
+        if (limiteX === 0) {
+            calcularLimite();
+        }
+
+        posX += velX * dir;
+
+        if (posX > limiteX) {
+            posX = limiteX;
+            dir = -1;
+        } else if (posX < 0) {
+            posX = 0;
+            dir = 1;
+        }
+
+        tiempo += velocidadSalto;
+        
+        const posY = -(Math.abs(Math.sin(tiempo))) * alturaSalto;
+        
+        estrella.style.transform = `translate(${posX}px, ${posY}px)`;
+
+        requestAnimationFrame(moverEstrella);
+    };
+
+    requestAnimationFrame(moverEstrella);
+    window.addEventListener('resize', () => { limiteX = 0; });
+
+    const manejarReproduccion = () => {
+        if (audio.paused) {
+            audio.play().catch(error => {
+                console.error("Error de audio:", error);
+            });
+            boton.textContent = "Pause";
+        } else {
+            audio.pause();
+            boton.textContent = "Play";
+        }
+    };
+
+    const iniciarInteraccion = () => {
+        audio.play().catch(error => {
+            console.error("Error al iniciar audio:", error);
+        });
+        boton.textContent = "Pause";
+        document.removeEventListener('click', iniciarInteraccion);
+        boton.addEventListener('click', manejarReproduccion);
+    };
+
+    document.addEventListener('click', iniciarInteraccion);
+</script>
+</body>
+</html>
